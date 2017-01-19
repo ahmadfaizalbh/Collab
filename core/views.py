@@ -56,7 +56,7 @@ def upload(request):
                     Channel.objects.create(admin= User.objects.get(username=creator),user_list={"user":user_list}, channel_name=j["name"],channel_type=chnl_type)
                                 # print(content)
         for filename,content in fileiterator(request.FILES["file"]):
-            print(filename)
+            #print(filename)
             for l in channels_list:
                 #print(l)
                 dmy = filename.split("/")
@@ -67,7 +67,7 @@ def upload(request):
                         if "user" in i: 
                             cookie_datetime = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(int(i["ts"].split(".")[0])))
                             tms=str(cookie_datetime)
-                            print(i["user"])
+                            #print(i["user"])
                             user=users_id[i["user"]]
                             txt=str(cleanupString(i["text"]))
                             re1='(<)'   # Any Single Character 1
@@ -95,7 +95,7 @@ def upload(request):
         return HttpResponseRedirect('/?msg=upload_successful')
     else:
         form = UploadFileForm()
-    return render_to_response('upload.html', {'form': form})
+    return render(request,'upload.html', context={'form': form})
  
 def fileiterator(zipf):
     with zipfile.ZipFile(zipf, "r", zipfile.ZIP_STORED) as openzip:
@@ -120,8 +120,8 @@ def node_api(request):
         user = User.objects.get(id=user_id)
         now = datetime.now()
         tms = timezone('Asia/Kolkata').localize(now)
-        print(request.POST.get('comment'))
-        print(request.POST.get('channel'))
+        #print(request.POST.get('comment'))
+        #print(request.POST.get('channel'))
         #Create comment
         Comments.objects.create(user=user, text=request.POST.get('comment'), channel= request.POST.get('channel'),timestamp = tms)
         #for i in Comments.objects.get(timestamp=tms):
@@ -129,10 +129,12 @@ def node_api(request):
         #Once comment has been created post it to the chat channel
         r = redis.StrictRedis(host='localhost', port=6379, db=0)
         r.publish('chat', str(request.POST.get('channel') +"~"+ str(user.username)  + '*' + request.POST.get('comment')+'*' +str(tms.strftime("%b.%d,%Y, %I:%M %p.")) ))
-        print(str(user)+request.POST.get('comment'))
-        return HttpResponse("Everything worked :)")
+        #print(str(user)+request.POST.get('comment'))
     except Exception as e:
         return HttpResponseServerError(str(e))
+    return HttpResponse("Everything worked :)")
+    
+    
 @csrf_protect
 def register(request):
     if request.method == 'POST':
@@ -145,20 +147,11 @@ def register(request):
             )
             return HttpResponseRedirect('/register/success/')
     else:
-        form = RegistrationForm()
-    variables = RequestContext(request, {
-    'form': form
-    })
- 
-    return render_to_response(
-    'registration/register.html',
-    variables,
-    )
+        form = RegistrationForm() 
+    return render(request,'registration/register.html', context={'form': form}) 
  
 def register_success(request):
-    return render_to_response(
-    'registration/success.html',
-    )
+    return render(request,'registration/success.html')
  
 def logout_page(request):
     logout(request)
@@ -171,10 +164,8 @@ def logout_page(request):
  
 @login_required
 def homes(request):
-    return render_to_response(
-    'home.html',
-    { 'user': request.user }
-    )
+    return render(request,'home.html', context={ 'user': request.user })
+
 @login_required
 def add_channel(request):
     lst = []
@@ -198,7 +189,7 @@ def add_channel(request):
     users = usrr 
     access_user = [str(usr)]
     users1 = list(set(users) - set(access_user))
-    return render_to_response('add_channel.html',{ 'chnl_type' : "public",  'user' : request.user,'room' : lst1,'p_room' : lst, 'users1' : users1})
+    return render(request,'add_channel.html', context={ 'chnl_type' : "public",  'user' : request.user,'room' : lst1,'p_room' : lst, 'users1' : users1})
 
 @login_required
 def add_pchannel(request):
@@ -223,7 +214,7 @@ def add_pchannel(request):
     users = usrr 
     access_user = [str(usr)]
     users1 = list(set(users) - set(access_user))
-    return render_to_response('add_channel.html',{ 'chnl_type' : "private" , 'user' : request.user,'room' : lst1,'p_room' : lst, 'users1' : users1})
+    return render(request,'add_channel.html', context={ 'chnl_type' : "private" , 'user' : request.user,'room' : lst1,'p_room' : lst, 'users1' : users1})
 
 @login_required
 def channel(request, chatroom):
@@ -244,7 +235,7 @@ def channel(request, chatroom):
     cnl = Channel.objects.get(channel_name=chatroom)
     access_user = cnl.user_list[u"user"]
     access_user.append(str(cnl.admin))
-    print(access_user)
+    #print(access_user)
     chat = chatroom
     usr = request.user
     chnl_type = "public"
@@ -312,7 +303,7 @@ def p_channel(request, chatroom):
     access_user = cnl.user_list[u"user"]
     access_user.append(str(cnl.admin))
     cnl_admin = cnl.admin
-    print(access_user)
+    #print(access_user)
     chat = chatroom
     usr = request.user
     users = User.objects.all()
@@ -394,10 +385,10 @@ def add_user_to_private(request,chatroom):
     msg = {}
     try:
         if request.method == "POST":
-            print(request.POST)
+            #print(request.POST)
             cnl = Channel.objects.get(channel_name=chatroom)
             content = request.POST.getlist('lst[]')
-            print(content)
+            #print(content)
             if isinstance(content, list):
                 for i in content:
                     if not (i in cnl.user_list[u"user"]):
@@ -421,14 +412,14 @@ def check_add_channel(request,chatroom):
         temp=[]
         for i in cnl:
             temp.append(i.channel_name) 
-        print (channel_name)
+        #print (channel_name)
         if channel_name in temp:
             msg["status"]="Channel already available"
         else:
             msg["status"]="200 OK"
     else:
         msg["status"]="405 ERROR"
-    print (msg)
+    #print (msg)
     return JsonResponse(msg)
 
 @csrf_exempt

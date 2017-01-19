@@ -10,7 +10,7 @@ class Comments(models.Model):
 	user = models.ForeignKey(User)
 	text = models.TextField()
 	channel = models.CharField(max_length=50)
-	timestamp = models.DateTimeField(db_index=True)
+	timestamp = models.DateTimeField(default=timezone.now,db_index=True)
 	class Meta:
 		ordering = ['timestamp']
 

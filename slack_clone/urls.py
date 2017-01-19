@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views
 from core.views import *
@@ -21,14 +21,14 @@ from core.forms import LoginForm
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', 'core.views.home', name='home'),
-    url(r'^node_api$', 'core.views.node_api', name='node_api'),
+    url(r'^$',home, name='home'),
+    url(r'^node_api$', node_api, name='node_api'),
     url(r'^home/$', homes),
     url(r'^userlogout/$', logout_page),
     url(r'^register/$', register),
     url(r'^register/success/$', register_success),
-    url(r'^login/$', views.login, {'template_name': 'registration/login.html', 'authentication_form': LoginForm}),
-    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='logout'),
+    url(r'^login/$', views.login,name='login'),
+    url(r'^logout/$',views.logout, name='logout'),
     url(r'^channel/(?P<chatroom>[^/]*)/$', channel),
     url(r'^p_channel/(?P<chatroom>[^/]*)/$', p_channel),
     url(r'^add_channel/$', add_channel),
@@ -38,5 +38,4 @@ urlpatterns = [
     url(r'^add_new_channel$', new_channel),
     url(r'^add_new_pchannel$', new_pchannel),
     url(r'^file_upload$',upload),
-    
 ]
